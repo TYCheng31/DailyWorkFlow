@@ -51,7 +51,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_name('banklinker-473405-6be3
 client = gspread.authorize(creds)
 sheet = client.open("Bank").worksheet("總明細")
 
-HEADLESS = False
+HEADLESS = True
 
 chrome_options = Options()
 if HEADLESS:
