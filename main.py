@@ -216,7 +216,9 @@ def CathaySpider():
         )
         driver.execute_script("arguments[0].click();", logout_button)
     except Exception as e:
-        log_print(f"Error in CathaySpider: {e}")
+            # 在印出錯誤前，先截圖並存成 cathay_error.png
+            driver.save_screenshot('cathay_error.png') 
+            log_print(f"Error in CathaySpider: {e}")
 
 
 def LineSpider():
