@@ -48,3 +48,11 @@ jobs:
           LINE_PASSWORD: ${{ secrets.LINE_PASSWORD }}
 
         run: python main.py
+
+      # 加入這一段：把截圖上傳到 GitHub Actions 的結果頁面
+      - name: Upload Error Screenshots
+        uses: actions/upload-artifact@v4
+        if: always() # 確保無論腳本成功或失敗，都會執行上傳
+        with:
+          name: debug-screenshots
+          path: ./*.png
