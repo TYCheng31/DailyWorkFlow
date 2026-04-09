@@ -89,7 +89,7 @@ Line.login_id = os.getenv("LINE_ID")
 Line.login_account = os.getenv("LINE_ACCOUNT")
 Line.login_password = os.getenv("LINE_PASSWORD")
 
-wait = WebDriverWait(driver, 20)
+wait = WebDriverWait(driver, 60)
 
 def EsunSpider():
     try:
