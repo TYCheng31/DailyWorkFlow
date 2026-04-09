@@ -33,7 +33,7 @@ jobs:
           echo "$GCP_CREDENTIALS" > banklinker-473405-6be3b03228c7.json
 
       - name: Run Bank Scraper
-        # 將所有的 Secrets 注入為環境變數供 dotenv 讀取
+
         env:
           DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
           CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
@@ -46,5 +46,7 @@ jobs:
           LINE_ID: ${{ secrets.LINE_ID }}
           LINE_ACCOUNT: ${{ secrets.LINE_ACCOUNT }}
           LINE_PASSWORD: ${{ secrets.LINE_PASSWORD }}
-        # 假設你的主程式叫做 main.py，請依實際檔名修改
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+
         run: python main.py
