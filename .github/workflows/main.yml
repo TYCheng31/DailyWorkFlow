@@ -3,7 +3,7 @@ name: Daily Bank Scraper
 on:
   schedule:
     # 每天台灣時間早上 8 點執行 (UTC 時間 0 點)
-    - cron: '0 0 * * *'
+    - cron: '0 22 * * *'
   workflow_dispatch: # 允許手動點擊執行
 
 jobs:
