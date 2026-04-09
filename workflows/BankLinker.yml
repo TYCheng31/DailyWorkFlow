@@ -1,0 +1,50 @@
+name: Daily Bank Scraper
+
+on:
+  schedule:
+    # 每天台灣時間早上 8 點執行 (UTC 時間 0 點)
+    - cron: '0 0 * * *'
+  workflow_dispatch: # 允許手動點擊執行
+
+jobs:
+  scrape-and-update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      # 動態產生 Google API 的 JSON 金鑰檔案
+      # 這樣你的 Python 程式碼完全不用改就能直接讀取到檔案
+      - name: Create Google Credentials JSON
+        env:
+          GCP_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
+        run: |
+          echo "$GCP_CREDENTIALS" > banklinker-473405-6be3b03228c7.json
+
+      - name: Run Bank Scraper
+        # 將所有的 Secrets 注入為環境變數供 dotenv 讀取
+        env:
+          DISCORD_TOKEN: ${{ secrets.DISCORD_TOKEN }}
+          CHANNEL_ID: ${{ secrets.CHANNEL_ID }}
+          ESUN_ID: ${{ secrets.ESUN_ID }}
+          ESUN_ACCOUNT: ${{ secrets.ESUN_ACCOUNT }}
+          ESUN_PASSWORD: ${{ secrets.ESUN_PASSWORD }}
+          CATHAY_ID: ${{ secrets.CATHAY_ID }}
+          CATHAY_ACCOUNT: ${{ secrets.CATHAY_ACCOUNT }}
+          CATHAY_PASSWORD: ${{ secrets.CATHAY_PASSWORD }}
+          LINE_ID: ${{ secrets.LINE_ID }}
+          LINE_ACCOUNT: ${{ secrets.LINE_ACCOUNT }}
+          LINE_PASSWORD: ${{ secrets.LINE_PASSWORD }}
+        # 假設你的主程式叫做 main.py，請依實際檔名修改
+        run: python main.py
