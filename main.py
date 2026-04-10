@@ -297,7 +297,7 @@ try:
     stock_diff = total_stock - E3_value
     assets_diff = total_assets - F3_value
 
-    current_date = datetime.now().strftime("%Y/%m/%d")
+    current_time = datetime.now().strftime("%Y/%m/%d")
     #current_time = datetime.now().strftime("%H:%M:%S")
 
     #usa_time = datetime.now().strftime("%H:%M:%S")
