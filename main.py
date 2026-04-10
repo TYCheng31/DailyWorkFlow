@@ -11,7 +11,7 @@ import time
 import re
 import requests 
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 
 load_dotenv()
 
