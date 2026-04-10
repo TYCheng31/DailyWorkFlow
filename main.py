@@ -11,7 +11,7 @@ import time
 import re
 import requests 
 from dotenv import load_dotenv
-from datetime import datetime, timedelta
+from datetime import datetime
 
 load_dotenv()
 
@@ -300,8 +300,8 @@ try:
     current_date = datetime.now().strftime("%Y/%m/%d")
     #current_time = datetime.now().strftime("%H:%M:%S")
 
-    usa_time = datetime.now().strftime("%H:%M:%S")
-    current_time = usa_time + timedelta(hours=8)
+    #usa_time = datetime.now().strftime("%H:%M:%S")
+    #current_time = usa_time + timedelta(hours=8)
 
     sheet.insert_row([current_date, current_time, 
                     total_cash, total_exchange, total_stock, total_assets, 
