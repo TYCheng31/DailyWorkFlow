@@ -11,7 +11,7 @@ import time
 import re
 import requests 
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timedelta
 
 load_dotenv()
 
@@ -216,9 +216,7 @@ def CathaySpider():
         )
         driver.execute_script("arguments[0].click();", logout_button)
     except Exception as e:
-            # 在印出錯誤前，先截圖並存成 cathay_error.png
-            driver.save_screenshot('cathay_error.png') 
-            log_print(f"Error in CathaySpider: {e}")
+        log_print(f"Error in CathaySpider: {e}")
 
 
 def LineSpider():
@@ -297,11 +295,9 @@ try:
     stock_diff = total_stock - E3_value
     assets_diff = total_assets - F3_value
 
-    current_time = datetime.now().strftime("%Y/%m/%d")
+    current_date = datetime.now().strftime("%Y/%m/%d")
     #current_time = datetime.now().strftime("%H:%M:%S")
-
-    #usa_time = datetime.now().strftime("%H:%M:%S")
-    #current_time = usa_time + timedelta(hours=8)
+    current_time = (datetime.now() + timedelta(hours=8)).strftime("%H:%M:%S")
 
     sheet.insert_row([current_date, current_time, 
                     total_cash, total_exchange, total_stock, total_assets, 
