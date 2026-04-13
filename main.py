@@ -295,8 +295,7 @@ try:
     stock_diff = total_stock - E3_value
     assets_diff = total_assets - F3_value
 
-    current_date = datetime.now().strftime("%Y/%m/%d")
-    #current_time = datetime.now().strftime("%H:%M:%S")
+    current_date = (datetime.now() + timedelta(days=1)).strftime("%Y/%m/%d")    
     current_time = (datetime.now() + timedelta(hours=8)).strftime("%H:%M:%S")
 
     sheet.insert_row([current_date, current_time, 
