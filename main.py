@@ -12,7 +12,7 @@ import re
 import requests 
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
-
+#avoid disable act 260613
 load_dotenv()
 
 class DiscordLogger:
