@@ -94,66 +94,106 @@ wait = WebDriverWait(driver, 60)
 def EsunSpider():
     try:
         driver.get("https://ebank.esunbank.com.tw/index.jsp")
+        wait = WebDriverWait(driver, 20)
 
-        driver.switch_to.default_content()
-        wait.until(
-            EC.frame_to_be_available_and_switch_to_it((By.ID, "iframe1"))
+        # 1. 強制輸入身分證字號/統一編號
+        id_input = wait.until(
+            EC.presence_of_element_located((By.NAME, "id"))
         )
+        driver.execute_script("arguments[0].value = arguments[1];", id_input, Esun.login_id)
+        driver.execute_script("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", id_input)
+        driver.execute_script("arguments[0].dispatchEvent(new Event('change', { bubbles: true }));", id_input)
 
-        cust_input = wait.until(
-            EC.visibility_of_element_located((By.ID, "loginform:custid"))
+        # 2. 強制輸入使用者名稱
+        user_input = wait.until(
+            EC.presence_of_element_located((By.NAME, "userName"))
         )
-        cust_input.clear()
-        cust_input.send_keys(Esun.login_id)
+        driver.execute_script("arguments[0].value = arguments[1];", user_input, Esun.login_account)
+        driver.execute_script("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", user_input)
+        driver.execute_script("arguments[0].dispatchEvent(new Event('change', { bubbles: true }));", user_input)
 
-        cust_input = wait.until(
-            EC.visibility_of_element_located((By.ID, "loginform:name"))
+        # 3. 強制輸入使用者密碼
+        pwd_input = wait.until(
+            EC.presence_of_element_located((By.NAME, "pxssword"))
         )
-        cust_input.clear()
-        cust_input.send_keys(Esun.login_account)
+        driver.execute_script("arguments[0].value = arguments[1];", pwd_input, Esun.login_password)
+        driver.execute_script("arguments[0].dispatchEvent(new Event('input', { bubbles: true }));", pwd_input)
+        driver.execute_script("arguments[0].dispatchEvent(new Event('change', { bubbles: true }));", pwd_input)
 
-        cust_input = wait.until(
-            EC.visibility_of_element_located((By.ID, "loginform:pxsswd"))
-        )
-        cust_input.clear()
-        cust_input.send_keys(Esun.login_password)
-
+        # 4. 強制點擊登入按鈕
         login_btn = wait.until(
-            EC.element_to_be_clickable((By.ID, "loginform:linkCommand"))
-        )
-        login_btn.click()
+            EC.presence_of_element_located((By.XPATH, "//button[contains(@class, 'btn-main-fill') and span[text()='登入']]"))
+        ) 
+        # 使用 JavaScript 強制點擊 (無視遮罩與畫面位置)
+        driver.execute_script("arguments[0].click();", login_btn)
 
-        span_el = wait.until(
-            EC.presence_of_element_located((By.ID, "_0"))
-        )
-        Esun.main_account = span_el.text.strip()
-        print(f"ESUNAccount：{Esun.main_account}")
+        # ================= 處理可能出現的「確定登入」按鈕 =================
+        try:
+            # 設定較短的等待時間 (3秒)，避免沒出現時腳本卡住太久
+            short_wait = WebDriverWait(driver, 3)
+            confirm_login_btn = short_wait.until(
+                EC.presence_of_element_located((By.XPATH, "//button[contains(@class, 'modal-default-button') and span[text()='確定登入']]"))
+            )
+            driver.execute_script("arguments[0].click();", confirm_login_btn)
+        except TimeoutException:
+            # 如果 3 秒內沒找到該按鈕，代表正常登入，直接 pass 繼續執行下一步
+            pass
+        except Exception as e:
+        # =====================================================================
 
-        personal_balance_sheet = wait.until(
-            EC.presence_of_element_located((By.XPATH, "//a[text()='個人資產負債表']"))
-        )
-        driver.execute_script("arguments[0].click();", personal_balance_sheet)
+        # 登入後畫面切換需要時間渲染前端框架，強制等待 4 秒
+        time.sleep(4)
 
-        balance_td = wait.until(
-            EC.presence_of_element_located((By.ID, "fms01010a:twTd2"))
+        # 5. 點擊「資產負債表」頁籤
+        # 改用 element_to_be_clickable，確保按鈕處於可被互動的狀態
+        balance_sheet_tab = wait.until(
+            EC.element_to_be_clickable((By.ID, "CCOA1002"))
         )
+        try:
+            # 使用 ActionChains 模擬真實使用者的「滑鼠移至元素上 -> 點擊」
+            ActionChains(driver).move_to_element(balance_sheet_tab).click().perform()
+        except Exception as click_err:
+            driver.execute_script("arguments[0].click();", balance_sheet_tab)
 
-        balance_text = balance_td.text.strip().replace(",", "")
-        Esun.cash = int(balance_text)
+        # 點擊完之後，再稍微等個 2 秒，讓底下的金額數字讀取出來
+        time.sleep(2)
+
+        # 6. 取得「臺幣存款」的金額
+        cash_element = wait.until(
+            EC.presence_of_element_located((
+                By.XPATH, 
+                "//div[text()='臺幣存款']/ancestor::div[contains(@class, 'main-content-wrapper')]//div[contains(@class, 'legend-item-value')]//span"
+            ))
+        )
+        # 取得文字，使用 textContent 確保不受前端畫面遮罩影響
+        cash_text = cash_element.get_attribute("textContent").strip().replace(",", "")
+        # 轉換成整數並存入原本的變數中
+        Esun.cash = int(cash_text)
         print(f"ESUNcash: {Esun.cash}")
 
-        balance_td = wait.until(
-            EC.presence_of_element_located((By.ID, "fms01010a:stockTd2"))
+        # 7. 取得「投資 / 證券」的金額
+        stock_element = wait.until(
+            EC.presence_of_element_located((
+                By.XPATH, 
+                "//div[text()='投資 / 證券']/ancestor::div[contains(@class, 'main-content-wrapper')]//div[contains(@class, 'legend-item-value')]//span"
+            ))
         )
-
-        balance_text = balance_td.text.strip().replace(",", "")
-        Esun.stock = int(balance_text)
+        # 取得文字，清除逗號並轉為整數
+        stock_text = stock_element.get_attribute("textContent").strip().replace(",", "")
+        # 存入原本的 stock 變數中
+        Esun.stock = int(stock_text)
         print(f"ESUNstock: {Esun.stock}")
 
-        logout_button = driver.find_element(By.CSS_SELECTOR, "a.log_out")  
-        logout_button.click()
+        # 8. 強制點擊登出圖示
+        logout_icon = wait.until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".header-option-entry-logout-icon"))
+        )
+        # 使用 JavaScript 強制點擊
+        driver.execute_script("arguments[0].click();", logout_icon)
+
     except Exception as e:
-        log_print(f"Error in EsunSpider: {e}")
+        # 如果你有自定義的 log_print 請確保有該函式，或者直接用 print
+        print(f"Error in EsunSpider: {e}")
     
 def CathaySpider():
     try:
